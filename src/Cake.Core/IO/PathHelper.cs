@@ -262,6 +262,12 @@ namespace Cake.Core.IO
                     return true;
                 }
 
+                // User Home Directory?
+                if (path[0] == '~')
+                {
+                    return true;
+                }
+
                 if (path.Length >= 2)
                 {
                     // UNC?

@@ -399,6 +399,22 @@ namespace Cake.Core.Tests.Unit.IO
                     Assert.Equal("/absolute/test.txt", result.FullPath);
                 }
 
+                [Fact]
+                public void Should_Return_A_Absolute_File_Path_If_File_Path_Uses_Shortcut_to_Home_Directory()
+                {
+                    // Given
+                    var path = new FilePath("~/test.txt");
+                    var environment = Substitute.For<ICakeEnvironment>();
+                    environment.WorkingDirectory.Returns(new DirectoryPath("/absolute"));
+                    environment.UserHomeDirectory.Returns("/Users/CakeUser");
+
+                    // When
+                    var result = path.MakeAbsolute(environment);
+
+                    // Then
+                    Assert.Equal("/Users/CakeUser/test.txt", result.FullPath);
+                }
+
                 [Theory]
                 [InlineData("/test.txt")]
                 public void Should_Return_Same_File_Path_If_File_Path_Is_Absolute(string fullPath)
@@ -413,6 +429,23 @@ namespace Cake.Core.Tests.Unit.IO
 
                     // Then
                     Assert.Equal(fullPath, result.FullPath);
+                }
+
+                [Theory]
+                [InlineData("~/test.txt")]
+                public void Should_Not_Return_Same_File_Path_If_File_Path_Uses_Shortcut_to_Home_Directory(string fullPath)
+                {
+                    // Given
+                    var path = new FilePath(fullPath);
+                    var environment = Substitute.For<ICakeEnvironment>();
+                    environment.WorkingDirectory.Returns(new DirectoryPath("/absolute"));
+                    environment.UserHomeDirectory.Returns("/Users/CakeUser");
+
+                    // When
+                    var result = path.MakeAbsolute(environment);
+
+                    // Then
+                    Assert.NotEqual(fullPath, result.FullPath);
                 }
 
                 [WindowsTheory]

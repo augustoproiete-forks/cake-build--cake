@@ -156,10 +156,17 @@ namespace Cake.Core.IO
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (path.IsRelative)
             {
                 throw new CakeException("The provided path cannot be relative.");
             }
+
+            if (path.FullPath?.StartsWith("~") ?? false)
+            {
+                throw new CakeException("The provided path cannot be a shortcut to the user's home directory.");
+            }
+
             return IsRelative
                 ? path.Combine(this).Collapse()
                 : new DirectoryPath(FullPath);
@@ -176,6 +183,20 @@ namespace Cake.Core.IO
             {
                 throw new ArgumentNullException(nameof(environment));
             }
+
+            if (FullPath?.StartsWith("~") ?? false)
+            {
+                if (FullPath.Length > 2)
+                {
+                    // Get the path without tilde and next separator (assumed to be a single character)
+                    var pathWithoutTildeSegment = new DirectoryPath(FullPath.Substring(2));
+                    return new DirectoryPath(pathWithoutTildeSegment.MakeAbsolute(environment.UserHomeDirectory).FullPath).Collapse();
+                }
+
+                // Special case when only `~` or `~/` or `~\` because the path would be empty and throw an exception
+                return new DirectoryPath(environment.UserHomeDirectory.FullPath).Collapse();
+            }
+
             return IsRelative
                 ? environment.WorkingDirectory.Combine(this).Collapse()
                 : new DirectoryPath(FullPath);

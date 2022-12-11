@@ -422,6 +422,23 @@ namespace Cake.Core.Tests.Unit.IO
                 }
 
                 [Fact]
+                public void Should_Create_New_Absolute_Path_When_Path_Uses_Shortcut_to_Home_Directory()
+                {
+                    // Given
+                    var environment = Substitute.For<ICakeEnvironment>();
+                    environment.WorkingDirectory.Returns("/Working");
+                    environment.UserHomeDirectory.Returns("/Users/CakeUser");
+
+                    var path = new DirectoryPath("~/assets");
+
+                    // When
+                    var result = path.MakeAbsolute(environment);
+
+                    // Then
+                    Assert.Equal("/Users/CakeUser/assets", result.FullPath);
+                }
+
+                [Fact]
                 public void Should_Create_New_Absolute_Path_Identical_To_The_Path()
                 {
                     // Given
